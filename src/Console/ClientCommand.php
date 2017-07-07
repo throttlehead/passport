@@ -16,6 +16,7 @@ class ClientCommand extends Command
     protected $signature = 'passport:client
             {--personal : Create a personal access token client}
             {--password : Create a password grant client}
+            {--credential : Create a credentials grant client}
             {--name= : The name of the client}';
 
     /**
@@ -39,6 +40,10 @@ class ClientCommand extends Command
 
         if ($this->option('password')) {
             return $this->createPasswordClient($clients);
+        }
+
+        if ($this->option('credential')) {
+            return $this->createCredentialClient($clients);
         }
 
         $this->createAuthCodeClient($clients);
@@ -120,5 +125,28 @@ class ClientCommand extends Command
         $this->info('New client created successfully.');
         $this->line('<comment>Client ID:</comment> '.$client->id);
         $this->line('<comment>Client secret:</comment> '.$client->secret);
+    }
+
+
+    /**
+     * Create a new credential grant client.
+     *
+     * @param  \Laravel\Passport\ClientRepository  $clients
+     * @return void
+     */
+    protected function createCredentialClient(ClientRepository $clients)
+    {
+        $name = $this->option('name') ?: $this->ask(
+            'What should we name the credentials grant client?',
+            config('app.name').' Credentials Grant Client'
+        );
+
+        $client = $clients->createPasswordGrantClient(
+            null, $name, 'http://localhost'
+        );
+
+        $this->info('Password grant client created successfully.');
+        $this->line('<comment>Client ID:</comment> '.$client->id);
+        $this->line('<comment>Client Secret:</comment> '.$client->secret);
     }
 }
